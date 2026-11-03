@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#C8102E">
+  <title>Área do corretor | AdairImoveis</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%23C8102E'/%3E%3Cpath d='M4.5 12 12 5.5l7.5 6.5M7 10.5V18h10v-7.5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="pagina-admin">
+
+  <div class="faixa-teste" id="faixa-teste" hidden>
+    Modo de teste: o que você cadastrar fica salvo só neste navegador e ninguém mais vê. Para publicar de verdade, siga o LEIA-ME.
+  </div>
+
+  <header class="topo">
+    <div class="container topo__linha">
+      <a class="logo" href="index.html" aria-label="AdairImoveis, página inicial">
+        <span class="logo__icone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 11.5 12 4l9 7.5"/>
+            <path d="M5.5 10v9.5h13V10"/>
+            <path d="M10 19.5v-5h4v5"/>
+          </svg>
+        </span>
+        <span>AdairImoveis</span>
+      </a>
+      <nav class="topo__contato" aria-label="Painel">
+        <span class="topo__usuario" id="usuario" hidden></span>
+        <a class="botao botao--contorno" href="index.html" target="_blank" rel="noopener">Ver o site</a>
+        <button class="botao botao--contorno" id="btn-sair" type="button" hidden>Sair</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container admin">
+
+    <p class="carregando" id="tela-carregando">Carregando…</p>
+
+    <!-- ENTRAR -->
+    <section id="tela-login" class="caixa caixa--estreita" hidden>
+      <h1 class="titulo-admin">Área do corretor</h1>
+      <form id="form-login" class="form" novalidate>
+        <label class="campo">
+          E-mail
+          <input type="email" id="login-email" autocomplete="username" inputmode="email" required>
+        </label>
+        <label class="campo">
+          Senha
+          <input type="password" id="login-senha" autocomplete="current-password" required>
+        </label>
+        <label class="marcar">
+          <input type="checkbox" id="mostrar-senha">
+          Mostrar senha
+        </label>
+        <p class="mensagem mensagem--erro" id="erro-login" role="alert" hidden></p>
+        <button class="botao botao--vermelho botao--grande" id="btn-entrar" type="submit">Entrar</button>
+      </form>
+    </section>
+
+    <!-- LISTA DE IMÓVEIS -->
+    <section id="tela-lista" hidden>
+      <div class="aviso aviso--alerta" id="aviso-permissao" hidden>
+        <p><strong>Seu login ainda não pode alterar os imóveis.</strong></p>
+        <p>O e-mail <strong id="aviso-email"></strong> não está na lista de administradores. No Supabase, abra o SQL Editor, cole a linha abaixo e clique em Run:</p>
+        <pre><code id="aviso-sql"></code></pre>
+      </div>
+
+      <div class="mensagem mensagem--erro" id="erro-lista" hidden>
+        <p id="erro-lista-texto"></p>
+        <button class="botao botao--contorno botao--pequeno" id="btn-recarregar" type="button">Carregar de novo</button>
+      </div>
+
+      <div class="lista-topo">
+        <div>
+          <h1 class="titulo-admin">Imóveis</h1>
+          <p class="lista-topo__resumo" id="resumo"></p>
+        </div>
+        <button class="botao botao--vermelho botao--grande" id="btn-novo" type="button">+ Novo imóvel</button>
+      </div>
+
+      <div class="lista-filtros">
+        <label class="campo campo--busca">
+          <span class="sr">Buscar imóveis</span>
+          <input type="search" id="busca-admin" placeholder="Buscar por título, bairro ou código" autocomplete="off">
+        </label>
+        <div class="abas" aria-label="Mostrar">
+          <button class="aba" type="button" data-filtro="todos" data-rotulo="Todos" aria-pressed="true">Todos</button>
+          <button class="aba" type="button" data-filtro="site" data-rotulo="No site" aria-pressed="false">No site</button>
+          <button class="aba" type="button" data-filtro="fora" data-rotulo="Vendidos e alugados" aria-pressed="false">Vendidos e alugados</button>
+        </div>
+      </div>
+
+      <div class="lista-admin" id="lista-admin"></div>
+    </section>
+
+    <!-- CADASTRO / EDIÇÃO -->
+    <section id="tela-form" hidden>
+      <div class="form-topo">
+        <button class="link link--voltar" id="btn-voltar" type="button">Voltar para a lista</button>
+        <h1 class="titulo-admin" id="titulo-form" tabindex="-1">Novo imóvel</h1>
+        <p class="form-topo__sub" id="subtitulo-form" hidden></p>
+      </div>
+
+      <form id="form-imovel" class="form-imovel" novalidate>
+
+        <fieldset class="bloco">
+          <legend>O básico</legend>
+          <div class="bloco__corpo">
+            <div class="campo-grupo">
+              <span class="campo-rotulo">Finalidade</span>
+              <div class="segmento">
+                <label><input type="radio" name="finalidade" value="venda" checked><span>Venda</span></label>
+                <label><input type="radio" name="finalidade" value="aluguel"><span>Aluguel</span></label>
+              </div>
+            </div>
+
+            <div class="campo-grupo">
+              <span class="campo-rotulo">Tipo</span>
+              <div class="tipos__lista">
+                <label class="chip"><input type="radio" name="tipo" value="casa" checked><span>Casa</span></label>
+                <label class="chip"><input type="radio" name="tipo" value="apartamento"><span>Apartamento</span></label>
+                <label class="chip"><input type="radio" name="tipo" value="terreno"><span>Terreno</span></label>
+                <label class="chip"><input type="radio" name="tipo" value="sitio"><span>Sítio</span></label>
+                <label class="chip"><input type="radio" name="tipo" value="chacara"><span>Chácara</span></label>
+              </div>
+            </div>
+
+            <label class="campo">
+              Título do anúncio
+              <input type="text" id="f-titulo" maxlength="90" autocomplete="off" placeholder="Ex.: Casa com 3 quartos e quintal">
+              <small>Aparece em destaque no site. Diga o que o imóvel tem de melhor.</small>
+            </label>
+
+            <label class="campo">
+              <span id="rotulo-preco">Valor de venda</span>
+              <span class="campo-dinheiro">
+                <span>R$</span>
+                <input type="text" id="f-preco" inputmode="numeric" autocomplete="off" placeholder="0">
+                <span id="sufixo-preco" hidden>por mês</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="bloco">
+          <legend>Fotos</legend>
+          <div class="bloco__corpo">
+            <p class="bloco__dica">A primeira foto é a capa do anúncio. Use a estrela para trocar a capa e as setas para mudar a ordem.</p>
+            <label class="zona-fotos" id="zona-fotos">
+              <input type="file" id="f-fotos" accept="image/*" multiple>
+              <span class="zona-fotos__titulo">Adicionar fotos</span>
+              <span class="zona-fotos__dica">Toque para escolher na galeria ou arraste as fotos para cá</span>
+            </label>
+            <p class="bloco__dica" id="fotos-contador" aria-live="polite"></p>
+            <div class="fotos-grade" id="fotos-grade"></div>
+            <p class="mensagem mensagem--erro" id="fotos-erro" role="alert" hidden></p>
+          </div>
+        </fieldset>
+
+        <fieldset class="bloco">
+          <legend>Onde fica</legend>
+          <div class="bloco__corpo">
+            <label class="campo">
+              Bairro e cidade
+              <input type="text" id="f-local" maxlength="120" autocomplete="off" placeholder="Ex.: Jardim Itália, Cuiabá">
+            </label>
+
+            <div class="campo-grupo">
+              <label class="campo">
+                Link do Google Maps (opcional)
+                <input type="url" id="f-mapa" autocomplete="off" placeholder="https://maps.app.goo.gl/...">
+                <small>No Google Maps, abra o local, toque em Compartilhar e copie o link. Se ficar vazio, o site procura pelo bairro e cidade.</small>
+              </label>
+              <button class="botao botao--contorno botao--pequeno" id="btn-testar-mapa" type="button">Conferir no mapa</button>
+            </div>
+
+            <label class="marcar">
+              <input type="checkbox" id="f-condominio">
+              Fica em condomínio
+            </label>
+
+            <label class="campo" id="campo-nomecond" hidden>
+              Nome do condomínio
+              <input type="text" id="f-nomecond" maxlength="80" autocomplete="off" placeholder="Ex.: Residencial Ipê">
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="bloco">
+          <legend>Detalhes</legend>
+          <div class="bloco__corpo">
+            <div class="campo-area">
+              <label class="campo">
+                Área (opcional)
+                <input type="text" id="f-area" inputmode="decimal" autocomplete="off" placeholder="Ex.: 360">
+              </label>
+              <label class="campo">
+                Medida
+                <select id="f-area-unidade">
+                  <option value="m2">m²</option>
+                  <option value="ha">hectares</option>
+                  <option value="alq">alqueires</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="campos-numeros" id="campos-comodos">
+              <label class="campo">
+                Quartos
+                <input type="number" id="f-quartos" min="0" max="99" step="1" inputmode="numeric">
+              </label>
+              <label class="campo">
+                Banheiros
+                <input type="number" id="f-banheiros" min="0" max="99" step="1" inputmode="numeric">
+              </label>
+              <label class="campo">
+                Vagas de garagem
+                <input type="number" id="f-vagas" min="0" max="99" step="1" inputmode="numeric">
+              </label>
+            </div>
+
+            <label class="campo">
+              Descrição
+              <textarea id="f-descricao" rows="6" maxlength="3000" placeholder="Conte sobre o imóvel: cômodos, garagem, quintal, vizinhança, documentação..."></textarea>
+              <small id="contador-descricao">0 de 3000 letras</small>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="bloco">
+          <legend>No site</legend>
+          <div class="bloco__corpo">
+            <label class="campo">
+              Situação
+              <select id="f-situacao"></select>
+              <small>Vendido ou alugado sai do site, mas continua guardado aqui no painel.</small>
+            </label>
+            <label class="marcar">
+              <input type="checkbox" id="f-destaque">
+              Destacar (aparece primeiro no site)
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="barra-salvar">
+          <p class="mensagem mensagem--erro" id="erro-form" role="alert" hidden></p>
+          <div class="barra-salvar__botoes">
+            <button class="botao botao--vermelho botao--grande" id="btn-salvar" type="submit">Salvar imóvel</button>
+            <button class="botao botao--contorno botao--grande" id="btn-cancelar" type="button">Cancelar</button>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="comum.js"></script>
+  <script src="banco.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

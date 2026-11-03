@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AdairImoveis | Casas, apartamentos, terrenos, sítios e chácaras</title>
+  <meta name="description" content="Encontre casas, apartamentos, terrenos, sítios e chácaras para comprar ou alugar com a AdairImoveis.">
+  <meta name="theme-color" content="#C8102E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%23C8102E'/%3E%3Cpath d='M4.5 12 12 5.5l7.5 6.5M7 10.5V18h10v-7.5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="faixa-teste" id="faixa-teste" hidden>
+    Modo de teste: estes são imóveis de exemplo. Para publicar os imóveis de verdade, siga o LEIA-ME.
+  </div>
+
+  <header class="topo">
+    <div class="container topo__linha">
+      <a class="logo" href="index.html" aria-label="AdairImoveis, página inicial">
+        <span class="logo__icone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 11.5 12 4l9 7.5"/>
+            <path d="M5.5 10v9.5h13V10"/>
+            <path d="M10 19.5v-5h4v5"/>
+          </svg>
+        </span>
+        <span>AdairImoveis</span>
+      </a>
+      <nav class="topo__contato" aria-label="Contato">
+        <a class="botao botao--contorno" id="btn-ligar" href="#">Ligar</a>
+        <a class="botao botao--vermelho" id="btn-whats-topo" href="#" target="_blank" rel="noopener">WhatsApp</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="busca" aria-labelledby="titulo-busca">
+    <div class="container">
+      <h1 id="titulo-busca">Encontre casas, terrenos, sítios e chácaras</h1>
+      <p class="busca__sub">Escolha o que você procura e quanto quer pagar. A localização é opcional.</p>
+
+      <form id="form-busca" class="painel" novalidate>
+        <fieldset class="grupo">
+          <legend>O que você procura?</legend>
+          <div class="tipos__lista">
+            <label class="chip"><input type="radio" name="tipo" value="todos" checked><span>Todos</span></label>
+            <label class="chip"><input type="radio" name="tipo" value="casa"><span>Casa</span></label>
+            <label class="chip"><input type="radio" name="tipo" value="apartamento"><span>Apartamento</span></label>
+            <label class="chip"><input type="radio" name="tipo" value="terreno"><span>Terreno</span></label>
+            <label class="chip"><input type="radio" name="tipo" value="sitio"><span>Sítio</span></label>
+            <label class="chip"><input type="radio" name="tipo" value="chacara"><span>Chácara</span></label>
+          </div>
+        </fieldset>
+
+        <div class="painel__campos">
+          <fieldset class="grupo">
+            <legend>Quero</legend>
+            <div class="segmento">
+              <label><input type="radio" name="finalidade" value="venda" checked><span>Comprar</span></label>
+              <label><input type="radio" name="finalidade" value="aluguel"><span>Alugar</span></label>
+            </div>
+          </fieldset>
+
+          <label class="campo">
+            Valor mínimo (R$)
+            <input type="number" name="min" inputmode="numeric" min="0" step="any" placeholder="Ex.: 100000">
+          </label>
+
+          <label class="campo">
+            Valor máximo (R$)
+            <input type="number" name="max" inputmode="numeric" min="0" step="any" placeholder="Ex.: 500000">
+          </label>
+
+          <label class="campo">
+            Bairro ou cidade (opcional)
+            <input type="text" name="local" autocomplete="off" placeholder="Ex.: Centro">
+          </label>
+
+          <button class="botao botao--vermelho botao--grande" type="submit">Buscar imóveis</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <main class="container resultados" id="resultados">
+    <div class="resultados__topo">
+      <h2 id="contagem" aria-live="polite">Carregando imóveis…</h2>
+      <div class="resultados__ferramentas">
+        <label class="ordem">
+          <span>Ordenar por</span>
+          <select id="ordem">
+            <option value="relevancia">Destaques e mais recentes</option>
+            <option value="menor">Menor preço</option>
+            <option value="maior">Maior preço</option>
+          </select>
+        </label>
+        <button class="link" id="limpar" type="button">Limpar filtros</button>
+      </div>
+    </div>
+
+    <div class="grade" id="lista" aria-busy="true"></div>
+
+    <div class="vazio" id="vazio" hidden>
+      <p><strong id="vazio-titulo">Nenhum imóvel encontrado com esses filtros.</strong></p>
+      <p id="vazio-texto"></p>
+      <div class="vazio__acoes">
+        <a class="botao botao--vermelho" data-whats href="#" target="_blank" rel="noopener">Falar com o corretor</a>
+        <button class="botao botao--contorno" id="limpar-vazio" type="button">Limpar filtros</button>
+      </div>
+    </div>
+
+    <div class="vazio" id="erro" hidden>
+      <p><strong>Não foi possível carregar os imóveis agora.</strong></p>
+      <p>Confira sua internet e tente de novo, ou fale direto com o corretor.</p>
+      <div class="vazio__acoes">
+        <button class="botao botao--vermelho" id="tentar" type="button">Tentar de novo</button>
+        <a class="botao botao--contorno" data-whats href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
+      </div>
+    </div>
+  </main>
+
+  <dialog class="detalhe" id="detalhe" aria-labelledby="detalhe-titulo">
+    <div class="detalhe__barra">
+      <span>Detalhes do imóvel</span>
+      <button class="fechar" id="fechar" type="button">Fechar</button>
+    </div>
+    <div class="detalhe__rolagem" id="detalhe-conteudo"></div>
+  </dialog>
+
+  <footer class="rodape">
+    <div class="container rodape__linha">
+      <div>
+        <p class="rodape__nome">AdairImoveis</p>
+        <p>Telefone e WhatsApp: <a data-telefone href="#">(00) 90000-0000</a></p>
+      </div>
+      <a class="rodape__admin" href="admin.html">Área do corretor</a>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="comum.js"></script>
+  <script src="banco.js"></script>
+  <script src="site.js"></script>
+</body>
+</html>

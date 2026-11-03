@@ -1,0 +1,114 @@
+ADAIRIMOVEIS: COMO DEIXAR O SITE PRONTO
+=======================================
+
+O QUE TEM NESTA PASTA
+- site ............ o site. É ESTA pasta que vai para o Netlify.
+- supabase.sql .... prepara o banco de dados (passo 2). Não vai para o Netlify.
+- LEIA-ME.txt ..... este guia.
+
+Depois de configurado, o corretor entra no painel com e-mail e senha,
+cadastra o imóvel com as fotos e ele aparece no site na hora.
+Não precisa mais baixar nem enviar arquivos para o Netlify.
+
+
+TESTAR ANTES (OPCIONAL)
+Abra site/admin.html no navegador. Sem o Supabase configurado, o site
+fica em "modo de teste": aparece uma faixa preta no topo, os imóveis são
+de exemplo e o que você cadastrar fica salvo só no seu navegador.
+Dá para testar tudo: cadastrar, colocar fotos, editar, marcar vendido.
+Depois abra site/index.html para ver como fica para o cliente.
+
+
+PASSO 1: CRIAR O BANCO DE DADOS (GRÁTIS) NO SUPABASE
+1. Entre em supabase.com e crie uma conta (não pede cartão).
+2. Clique em "New project".
+   - Nome: adairimoveis
+   - Database password: crie uma senha e guarde (o site não usa, mas o Supabase pede)
+   - Region: South America (São Paulo)
+3. Espere o projeto terminar de criar (1 a 2 minutos).
+
+
+PASSO 2: RODAR O ARQUIVO supabase.sql
+1. Abra o supabase.sql no Bloco de Notas.
+2. Na PARTE 1, troque EMAIL_DO_CORRETOR@exemplo.com pelo e-mail que o
+   corretor vai usar para entrar no painel. Quer entrar também? Copie a
+   linha do insert e coloque o seu e-mail na cópia.
+3. Copie todo o conteúdo do arquivo.
+4. No Supabase, abra "SQL Editor" no menu da esquerda, cole e clique em "Run".
+   Se aparecer um aviso perguntando se quer mesmo rodar, confirme.
+   Deve aparecer "Success. No rows returned".
+
+
+PASSO 3: CRIAR O LOGIN DO CORRETOR
+1. No Supabase, vá em "Authentication" > "Users" > "Add user" > "Create new user".
+2. Use o MESMO e-mail do passo 2 e crie uma senha para ele.
+3. Deixe marcada a opção "Auto Confirm User".
+4. Recomendado: em "Authentication" > "Sign In / Providers", desligue
+   "Allow new users to sign up". Assim ninguém cria conta sozinho.
+
+
+PASSO 4: LIGAR O SITE AO SUPABASE
+1. No Supabase, clique no botão "Connect" no topo do projeto, ou abra
+   "Project Settings" > "API Keys".
+2. Copie a "Project URL" (algo como https://abcdxyz.supabase.co)
+   e a "Publishable key" (começa com sb_publishable_).
+   Projetos antigos podem mostrar "anon public" no lugar: serve também.
+3. Abra site/config.js no Bloco de Notas e cole entre as aspas:
+     supabaseUrl: "https://abcdxyz.supabase.co",
+     supabaseChave: "sb_publishable_...",
+4. No mesmo arquivo, troque o telefone do corretor (só números, com 55 e DDD)
+   e o telefone que aparece escrito no site. Salve o arquivo.
+
+A chave publishable pode ficar no site: ela só deixa ver os imóveis.
+Alterar, só quem tem login de administrador.
+NUNCA coloque no site a chave "secret" nem a "service_role".
+
+
+PASSO 5: PUBLICAR NO NETLIFY
+Arraste a pasta "site" para o Netlify (no site, aba "Deploys").
+Se você usa GitHub: coloque o conteúdo da pasta "site" no repositório,
+ou, no Netlify, defina "Publish directory" como site.
+
+Só precisa enviar os arquivos de novo se mudar o código ou o config.js.
+Imóvel novo, foto nova ou vendido não precisam: o painel já atualiza o site.
+
+
+COMO O CORRETOR USA O PAINEL
+- Endereço: seusite.netlify.app/admin.html (ou clique em "Área do corretor"
+  no rodapé do site). Entra com o e-mail e a senha do passo 3.
+- "+ Novo imóvel": escolhe venda ou aluguel, o tipo, escreve o título e o
+  valor, coloca as fotos, bairro e cidade, link do mapa e a descrição.
+  Clica em "Salvar imóvel" e pronto, já está no site.
+- Fotos: pode escolher várias de uma vez (até 20). A primeira é a capa.
+  A estrela troca a capa e as setas mudam a ordem. As fotos do celular são
+  reduzidas antes de enviar, para o site ficar rápido.
+- "Marcar vendido" (ou "Marcar alugado"): o imóvel sai do site, mas fica
+  guardado no painel. "Voltar para o site" coloca de volta.
+- "Copiar link": copia o endereço do imóvel para mandar no WhatsApp.
+- "Excluir": apaga o imóvel e as fotos de vez.
+
+
+PROBLEMAS COMUNS
+- O site mostra a faixa "Modo de teste": o config.js não foi preenchido,
+  ou o config.js novo não foi enviado para o Netlify.
+- "E-mail ou senha incorretos": confira o usuário em Authentication > Users.
+- "Este login não tem permissão": o e-mail não está na lista de
+  administradores. No SQL Editor do Supabase, rode (com o e-mail certo):
+    insert into public.administradores (email) values ('email@exemplo.com');
+- "O banco de dados ainda não foi preparado": o passo 2 não foi feito ou deu erro.
+- A pasta de fotos não foi criada pelo passo 2: no Supabase, abra "Storage",
+  crie um bucket chamado fotos e marque "Public bucket".
+- O corretor esqueceu a senha: em Authentication > Users, apague o usuário
+  e crie de novo com o mesmo e-mail e uma senha nova. Os imóveis não somem.
+
+
+PLANO GRÁTIS DO SUPABASE: UMA ATENÇÃO
+O Supabase grátis pausa o projeto se ele ficar 7 dias sem nenhum acesso.
+Com gente visitando o site isso não acontece. Se acontecer, os imóveis
+somem do site até alguém entrar no Supabase e clicar em "Restore project".
+Para não depender disso, crie uma tarefa grátis em cron-job.org que abra
+uma vez por dia o endereço:
+  https://SEU-PROJETO.supabase.co/rest/v1/imoveis?select=id&limit=1
+com o cabeçalho (header):  apikey: SUA_CHAVE_PUBLISHABLE
+O plano grátis também tem limite de 1 GB de fotos, o que dá milhares de fotos
+do tamanho que o painel envia.
